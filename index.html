@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forja · Treinos</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<div class="app">
+
+  <!-- ============ TOPBAR ============ -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="34" height="34">
+          <path d="M6 16h6v8H6z" fill="var(--forge)"/>
+          <path d="M28 16h6v8h-6z" fill="var(--forge)"/>
+          <rect x="12" y="18" width="16" height="4" rx="1" fill="var(--steel-light)"/>
+          <rect x="9" y="13" width="3" height="14" rx="1" fill="var(--steel-light)"/>
+          <rect x="28" y="13" width="3" height="14" rx="1" fill="var(--steel-light)"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Forja</h1>
+        <p id="currentDate" class="topbar__date">—</p>
+      </div>
+    </div>
+
+    <div class="topbar__actions">
+      <button id="exportBtn" class="btn btn--ghost" title="Exportar dados (.json)">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/></svg>
+        <span class="btn-label">Exportar</span>
+      </button>
+      <button id="importBtn" class="btn btn--ghost" title="Importar dados (.json)">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 21V9"/><polyline points="7 14 12 9 17 14"/><path d="M5 3h14"/></svg>
+        <span class="btn-label">Importar</span>
+      </button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+      <button id="addBtn" class="btn btn--primary">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span class="btn-label" id="addBtnLabel">Novo grupo</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ BREADCRUMB ============ -->
+  <nav class="breadcrumb" id="breadcrumb"><!-- filled by JS --></nav>
+
+  <!-- ============ MAIN (view swaps here) ============ -->
+  <main class="main" id="mainView"><!-- filled by JS --></main>
+
+</div>
+
+<!-- ============ GROUP MODAL ============ -->
+<div class="modal-overlay hidden" id="groupModal">
+  <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="groupModalTitle">
+    <div class="modal__header">
+      <h2 id="groupModalTitle">Novo grupo</h2>
+      <button class="btn btn--icon" id="closeGroupModalBtn" aria-label="Fechar">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form id="groupForm" class="modal__body">
+      <div class="field">
+        <label for="groupName">Nome do grupo *</label>
+        <input type="text" id="groupName" required maxlength="50" placeholder="Ex: Treino 5x por semana">
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--danger-ghost hidden" id="deleteGroupBtn">Excluir</button>
+        <div class="modal__footer-right">
+          <button type="button" class="btn btn--ghost" id="cancelGroupBtn">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Salvar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ SUBGROUP (TREINO) MODAL ============ -->
+<div class="modal-overlay hidden" id="subgroupModal">
+  <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="subgroupModalTitle">
+    <div class="modal__header">
+      <h2 id="subgroupModalTitle">Novo treino</h2>
+      <button class="btn btn--icon" id="closeSubgroupModalBtn" aria-label="Fechar">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form id="subgroupForm" class="modal__body">
+      <div class="field">
+        <label for="subgroupName">Nome do treino *</label>
+        <input type="text" id="subgroupName" required maxlength="50" placeholder="Ex: Treino A — Peito e tríceps">
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--danger-ghost hidden" id="deleteSubgroupBtn">Excluir</button>
+        <div class="modal__footer-right">
+          <button type="button" class="btn btn--ghost" id="cancelSubgroupBtn">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Salvar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ EXERCISE MODAL ============ -->
+<div class="modal-overlay hidden" id="exerciseModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="exerciseModalTitle">
+    <div class="modal__header">
+      <h2 id="exerciseModalTitle">Novo exercício</h2>
+      <button class="btn btn--icon" id="closeExerciseModalBtn" aria-label="Fechar">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form id="exerciseForm" class="modal__body">
+      <div class="field">
+        <label for="exerciseName">Nome do exercício *</label>
+        <input type="text" id="exerciseName" required maxlength="60" placeholder="Ex: Supino reto">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="exerciseSets">Quantidade de séries *</label>
+          <input type="number" id="exerciseSets" min="1" max="20" value="4" required>
+        </div>
+        <div class="field">
+          <label for="exerciseTime">Horário <span class="optional">(opcional)</span></label>
+          <input type="time" id="exerciseTime">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="exerciseNotes">Observações <span class="optional">(opcional)</span></label>
+        <textarea id="exerciseNotes" rows="2" maxlength="200" placeholder="Carga, técnica, cadência…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="exerciseVideoUrl">Link de vídeo <span class="optional">(opcional)</span></label>
+        <input type="url" id="exerciseVideoUrl" maxlength="300" placeholder="https://...">
+        <p class="field__hint">Cole um link (YouTube, Drive, Instagram…). Vídeos não ficam salvos no aparelho, só o link.</p>
+      </div>
+
+      <div class="field">
+        <label>Foto <span class="optional">(opcional)</span></label>
+        <div class="photo-field" id="photoField">
+          <div class="photo-preview hidden" id="photoPreviewWrap">
+            <img id="photoPreview" alt="Pré-visualização da foto">
+            <button type="button" class="photo-remove" id="photoRemoveBtn" aria-label="Remover foto">
+              <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <button type="button" class="btn btn--ghost btn--full" id="photoUploadBtn">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-5-4 4-3-3-5 5"/></svg>
+            <span class="btn-label">Adicionar foto</span>
+          </button>
+          <input type="file" id="exercisePhotoInput" accept="image/*" hidden>
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn btn--danger-ghost hidden" id="deleteExerciseBtn">Excluir</button>
+        <div class="modal__footer-right">
+          <button type="button" class="btn btn--ghost" id="cancelExerciseBtn">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Salvar exercício</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ CONFIRM MODAL ============ -->
+<div class="modal-overlay hidden" id="confirmModal">
+  <div class="modal modal--small" role="alertdialog" aria-modal="true">
+    <div class="modal__body">
+      <h2 id="confirmTitle">Tem certeza?</h2>
+      <p id="confirmMessage">Esta ação não pode ser desfeita.</p>
+      <div class="modal__footer">
+        <div class="modal__footer-right">
+          <button type="button" class="btn btn--ghost" id="confirmCancelBtn">Cancelar</button>
+          <button type="button" class="btn btn--danger" id="confirmOkBtn">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LIGHTBOX (photo viewer) ============ -->
+<div class="lightbox hidden" id="lightbox">
+  <img id="lightboxImg" alt="Foto do exercício">
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
